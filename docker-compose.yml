@@ -1,0 +1,22 @@
+# Dockerfile for deploying using Dockploy
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: telegram-bot
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    environment:
+      - TOKEN=${TOKEN}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.soapmama.rule=Host(`soapmama.net`)
+      - traefik.http.services.soapmama.loadbalancer.server.port=80
+      - traefik.http.routers.soapmama.entrypoints=websecure
+      - traefik.http.routers.soapmama.tls.certResolver=letsencrypt
+
+networks:
+  dokploy-network:
+    external: true
