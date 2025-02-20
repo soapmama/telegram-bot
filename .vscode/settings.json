@@ -1,0 +1,34 @@
+{
+    "go.useLanguageServer": true,
+    "go.toolsManagement.autoUpdate": true,
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": [
+        "--fast"
+    ],
+    "go.formatTool": "gofmt",
+    "go.inferGopath": false,
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.snippetSuggestions": "none"
+    },
+    "[go.mod]": {
+        "editor.formatOnSave": true
+    },
+    "gopls": {
+        "ui.semanticTokens": true,
+        "formatting.gofumpt": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/*.exe": true,
+        "**/*.test": true
+    }
+}
