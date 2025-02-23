@@ -60,7 +60,7 @@ func main() {
 	} else if config.GoEnv == "production" {
 		info, _ := bot.GetWebhookInfo()
 		fmt.Printf("Webhook Info: %+v\n", info)
-		updates, _ = bot.UpdatesViaWebhook("/bot" + bot.Token())
+		updates, _ = bot.UpdatesViaWebhook("/")
 		go func() {
 			_ = bot.StartWebhook("localhost:" + config.Port)
 		}()
