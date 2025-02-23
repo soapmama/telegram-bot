@@ -14,7 +14,7 @@ services:
       - GO_ENV=${GO_ENV}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.soapmama.rule=Host(`bot.soapmama.net`)
+      - traefik.http.routers.soapmama.rule=Host(`bot.soapmama.club`)
       - traefik.http.services.soapmama.loadbalancer.server.port=4211
       - traefik.http.routers.soapmama.entrypoints=websecure
       - traefik.http.routers.soapmama.tls.certResolver=letsencrypt
