@@ -57,7 +57,7 @@ func main() {
 		updates, _ = bot.UpdatesViaLongPolling(nil)
 		defer bot.StopLongPolling()
 	} else if config.GoEnv == "production" {
-		updates, _ = bot.UpdatesViaWebhook("/" + bot.Token())
+		updates, _ = bot.UpdatesViaWebhook("/bot" + bot.Token())
 		go func() {
 			_ = bot.StartWebhook("localhost:" + config.Port)
 		}()
