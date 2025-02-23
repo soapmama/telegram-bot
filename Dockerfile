@@ -15,6 +15,7 @@ FROM gcr.io/distroless/base-debian11 AS build-release-stage
 WORKDIR /
 
 COPY --from=build-stage /app/telegram-bot /telegram-bot
+COPY --from=build-stage /app/config.toml /config.toml
 
 EXPOSE 4211
 
