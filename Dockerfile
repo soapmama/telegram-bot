@@ -19,4 +19,4 @@ COPY --from=build-stage /app/telegram-bot /telegram-bot
 EXPOSE 4211
 
 # Run the application
-ENTRYPOINT ["/telegram-bot"] 
+CMD ["/telegram-bot"]

@@ -1,12 +1,9 @@
-# Dockerfile for deploying using Dockploy
-version: '3.8'
-
 services:
   bot:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
+    restart: unless-stopped
     ports:
       - 4211
     networks:
