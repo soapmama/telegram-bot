@@ -1,72 +1,85 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
-
-	"github.com/mymmrac/telego"
-	tu "github.com/mymmrac/telego/telegoutil"
 )
 
 type App struct {
-	bot    *telego.Bot
 	config *Config
 }
 
-func (app *App) handleChannelPost(update *telego.Update) {
+type Update struct {
+	Message *Message `json:"message"`
+}
+
+type Message struct {
+	Text string `json:"text"`
+	Chat Chat   `json:"chat"`
+}
+
+type Chat struct {
+	ID int64 `json:"id"`
+}
+
+func (app *App) handleChannelPost(update *Update) {
 	if update.Message != nil && strings.Contains(update.Message.Text, "ботик") {
-		// Retrieve chat ID
 		chatID := update.Message.Chat.ID
 
-		// Call method sendMessage.
-		// Send a message to sender with the same text (echo bot).
-		// (https://core.telegram.org/bots/api#sendmessage)
-		sentMessage, _ := app.bot.SendMessage(
-			tu.Message(
-				tu.ID(chatID),
-				"Мыльная папа советует: 🧼 Покупайте наше мыло 🧼",
-			),
-		)
+		// Send message using HTTP POST request
+		url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", app.config.Token)
+		payload := map[string]interface{}{
+			"chat_id": chatID,
+			"text":    "Мыльная папа советует: 🧼 Покупайте наше мыло 🧼",
+		}
 
-		fmt.Printf("Sent Message: %v\n", sentMessage)
+		jsonData, _ := json.Marshal(payload)
+		resp, _ := http.Post(url, "application/json", strings.NewReader(string(jsonData)))
+		defer resp.Body.Close()
+
+		fmt.Printf("Sent Message, Status: %v\n", resp.Status)
 	}
 }
 
 func main() {
 	config := newConfig()
 
-	// Note: Please keep in mind that default logger may expose sensitive information,
-	// use in development only
-	bot, err := telego.NewBot(config.Token, telego.WithDefaultDebugLogger())
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
 	app := &App{
-		bot:    bot,
 		config: config,
 	}
 
-	// Call method getMe
-	botUser, _ := bot.GetMe()
-	fmt.Printf("Bot User: %+v\n", botUser)
-
-	var updates <-chan telego.Update
 	if config.GoEnv == "development" {
-		updates, _ = bot.UpdatesViaLongPolling(nil)
-		defer bot.StopLongPolling()
+		fmt.Println("Development mode not implemented for standard library version")
+		os.Exit(1)
 	} else if config.GoEnv == "production" {
-		info, _ := bot.GetWebhookInfo()
-		fmt.Printf("Webhook Info: %+v\n", info)
-		updates, _ = bot.UpdatesViaWebhook("/bot")
-		go func() {
-			_ = bot.StartWebhook("localhost:" + config.Port)
-		}()
-	}
+		http.HandleFunc("/bot", func(w http.ResponseWriter, r *http.Request) {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				fmt.Printf("Error reading request body: %v\n", err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
 
-	for update := range updates {
-		app.handleChannelPost(&update)
+			var update Update
+			if err := json.Unmarshal(body, &update); err != nil {
+				fmt.Printf("Error unmarshaling update: %v\n", err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			app.handleChannelPost(&update)
+			w.WriteHeader(http.StatusOK)
+		})
+
+		fmt.Printf("Starting webhook server on port %s\n", config.Port)
+		err := http.ListenAndServe(":"+config.Port, nil)
+		if err != nil {
+			fmt.Printf("Server error: %v\n", err)
+			os.Exit(1)
+		}
 	}
 }
