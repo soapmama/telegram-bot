@@ -64,9 +64,6 @@ func main() {
 		go func() {
 			_ = bot.StartWebhook("localhost:" + config.Port)
 		}()
-		defer func() {
-			_ = bot.StopWebhook()
-		}()
 	}
 
 	for update := range updates {
