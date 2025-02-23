@@ -52,8 +52,19 @@ func main() {
 	botUser, _ := bot.GetMe()
 	fmt.Printf("Bot User: %+v\n", botUser)
 
-	updates, _ := bot.UpdatesViaLongPolling(nil)
-	defer bot.StopLongPolling()
+	var updates <-chan telego.Update
+	if config.GoEnv == "development" {
+		updates, _ = bot.UpdatesViaLongPolling(nil)
+		defer bot.StopLongPolling()
+	} else if config.GoEnv == "production" {
+		updates, _ = bot.UpdatesViaWebhook("/" + bot.Token())
+		go func() {
+			_ = bot.StartWebhook("localhost:" + config.Port)
+		}()
+		defer func() {
+			_ = bot.StopWebhook()
+		}()
+	}
 
 	for update := range updates {
 		app.handleChannelPost(&update)

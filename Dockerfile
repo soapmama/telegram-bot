@@ -15,6 +15,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
+EXPOSE 4211
+
 # Build the application
 RUN go build -o main .
 

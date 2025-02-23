@@ -3,11 +3,14 @@ package main
 import (
 	"log"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Token string
+	Token string `mapstructure:"TOKEN"`
+	GoEnv string `mapstructure:"GO_ENV"`
+	Port  string `mapstructure:"PORT"`
 	Links struct {
 		Distillate string `mapstructure:"distillate"`
 		Prices     string `mapstructure:"prices"`
@@ -16,12 +19,21 @@ type Config struct {
 }
 
 func newConfig() *Config {
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Warning: Could not load .env file %v", err)
+	}
+
 	v := viper.New()
 
 	v.SetConfigName("config")
 	v.SetConfigType("toml")
 	v.AddConfigPath(".")
 	v.AutomaticEnv()
+
+	v.BindEnv("TOKEN")
+	v.BindEnv("GO_ENV")
+	v.BindEnv("PORT")
 
 	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file: %s", err)
@@ -37,6 +49,7 @@ func newConfig() *Config {
 		log.Fatalf("Error unmarshaling config: %s", err)
 	}
 
+	log.Printf("Config: %+v", v.AllKeys())
 	if config.Token == "" {
 		log.Fatal("TOKEN environment variable not set")
 	}

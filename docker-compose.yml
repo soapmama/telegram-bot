@@ -3,17 +3,22 @@ version: '3.8'
 
 services:
   bot:
-    build: .
-    container_name: telegram-bot
-    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 4211
     networks:
       - dokploy-network
     environment:
       - TOKEN=${TOKEN}
+      - PORT=${PORT}
+      - GO_ENV=${GO_ENV}
     labels:
       - traefik.enable=true
       - traefik.http.routers.soapmama.rule=Host(`soapmama.net`)
-      - traefik.http.services.soapmama.loadbalancer.server.port=80
+      - traefik.http.services.soapmama.loadbalancer.server.port=4211
       - traefik.http.routers.soapmama.entrypoints=websecure
       - traefik.http.routers.soapmama.tls.certResolver=letsencrypt
 
