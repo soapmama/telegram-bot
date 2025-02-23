@@ -34,7 +34,25 @@ func (app *App) handleChannelPost(update *Update) {
 		url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", app.config.Token)
 		payload := map[string]interface{}{
 			"chat_id": chatID,
-			"text":    "Мыльная папа советует: 🧼 Покупайте наше мыло 🧼",
+			"text":    "Привет!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.",
+			"reply_markup": map[string]interface{}{
+				"inline_keyboard": [][]map[string]string{
+					{
+						{
+							"text": "Что такое гидролат",
+							"url":  app.config.Links.Distillate,
+						},
+						{
+							"text": "Где посмотреть ассортимент и цены",
+							"url":  app.config.Links.Prices,
+						},
+						{
+							"text": "Что такое крафтовое мыло",
+							"url":  app.config.Links.Soap,
+						},
+					},
+				},
+			},
 		}
 
 		jsonData, _ := json.Marshal(payload)
