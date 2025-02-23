@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
@@ -14,9 +15,9 @@ type App struct {
 }
 
 func (app *App) handleChannelPost(update *telego.Update) {
-	if update.Message != nil || update.ChannelPost != nil {
+	if update.Message != nil && strings.Contains(update.Message.Text, "ботик") {
 		// Retrieve chat ID
-		chatID := update.ChannelPost.Chat.ID
+		chatID := update.Message.Chat.ID
 
 		// Call method sendMessage.
 		// Send a message to sender with the same text (echo bot).
