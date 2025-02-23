@@ -42,10 +42,14 @@ func (app *App) handleChannelPost(update *Update) {
 							"text": "Что такое гидролат",
 							"url":  app.config.Links.Distillate,
 						},
+					},
+					{
 						{
 							"text": "Где посмотреть ассортимент и цены",
 							"url":  app.config.Links.Prices,
 						},
+					},
+					{
 						{
 							"text": "Что такое крафтовое мыло",
 							"url":  app.config.Links.Soap,
