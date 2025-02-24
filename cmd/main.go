@@ -39,20 +39,20 @@ func (app *App) handleChannelPost(update *Update) {
 				"inline_keyboard": [][]map[string]string{
 					{
 						{
-							"text": "Что такое гидролат",
-							"url":  app.config.Links.Distillate,
+							"text": "Что такое крафтовое мыло",
+							"url":  app.config.Links.Soap,
 						},
 					},
 					{
 						{
-							"text": "Где посмотреть ассортимент и цены",
+							"text": "Как сделать заказ",
 							"url":  app.config.Links.Prices,
 						},
 					},
 					{
 						{
-							"text": "Что такое крафтовое мыло",
-							"url":  app.config.Links.Soap,
+							"text": "Что такое гидролат",
+							"url":  app.config.Links.Distillate,
 						},
 					},
 				},
