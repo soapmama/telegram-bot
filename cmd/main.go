@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -64,11 +65,11 @@ func getMessageText(message *Message) string {
 func sendMessage(url string, jsonData []byte) {
 	resp, err := http.Post(url, "application/json", strings.NewReader(string(jsonData)))
 	if err != nil {
-		fmt.Printf("Error sending message: %v\n", err)
+		slog.Error("Error sending message", "error", err)
 		return
 	}
 	defer resp.Body.Close()
-	fmt.Printf("Sent Message, Status: %v\n", resp.Status)
+	slog.Info("Sent message", "status", resp.Status)
 }
 
 func getReplyMarkup(links *Links) map[string]any {
@@ -106,7 +107,6 @@ func (app *App) handleMessage(update *Update) {
 			"reply_markup": getReplyMarkup(&app.config.Links),
 		}
 
-		fmt.Printf("Sending message to chat %d with url: %s and payload: %v\n", chatID, url, payload)
 		jsonData, _ := json.Marshal(payload)
 		sendMessage(url, jsonData)
 	}
@@ -115,13 +115,13 @@ func (app *App) handleMessage(update *Update) {
 func (app *App) requestHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Printf("Error reading request body: %v\n", err)
+		slog.Error("Error reading request body", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	var update Update
 	if err := json.Unmarshal(body, &update); err != nil {
-		fmt.Printf("Error unmarshaling update: %v\n", err)
+		slog.Error("Error unmarshaling update", "error", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -135,10 +135,10 @@ func main() {
 		config: config,
 	}
 	http.HandleFunc("/bot", app.requestHandler)
-	fmt.Printf("Starting webhook server on port %s\n", config.Port)
+	slog.Info("Starting webhook server", "port", config.Port)
 	err := http.ListenAndServe(":"+config.Port, nil)
 	if err != nil {
-		fmt.Printf("Server error: %v\n", err)
+		slog.Error("Server error", "error", err)
 		os.Exit(1)
 	}
 }
