@@ -20,21 +20,39 @@ type Update struct {
 type Message struct {
 	Text string `json:"text"`
 	Chat Chat   `json:"chat"`
+	From User   `json:"from"`
 }
 
 type Chat struct {
 	ID int64 `json:"id"`
 }
 
+type User struct {
+	ID        int64  `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name,omitempty"`
+	Username  string `json:"username,omitempty"`
+}
+
 func (app *App) handleChannelPost(update *Update) {
 	if update.Message != nil && strings.Contains(update.Message.Text, "ботик") {
 		chatID := update.Message.Chat.ID
+
+		userMention := update.Message.From.FirstName
+		if update.Message.From.LastName != "" {
+			userMention += " " + update.Message.From.LastName
+		}
+
+		notificationMention := userMention
+		if update.Message.From.Username != "" {
+			notificationMention = "@" + update.Message.From.Username
+		}
 
 		// Send message using HTTP POST request
 		url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", app.config.Token)
 		payload := map[string]interface{}{
 			"chat_id": chatID,
-			"text":    "Привет!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.",
+			"text":    fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", notificationMention),
 			"reply_markup": map[string]interface{}{
 				"inline_keyboard": [][]map[string]string{
 					{
