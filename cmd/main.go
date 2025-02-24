@@ -35,7 +35,7 @@ type User struct {
 }
 
 func (app *App) handleChannelPost(update *Update) {
-	if update.Message != nil && strings.Contains(update.Message.Text, "ботик") {
+	if update.Message != nil && strings.Contains(strings.ToLower(update.Message.Text), "ботик") {
 		chatID := update.Message.Chat.ID
 
 		userMention := update.Message.From.FirstName
