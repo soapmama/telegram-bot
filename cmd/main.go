@@ -71,24 +71,26 @@ func sendMessage(url string, jsonData []byte) {
 	fmt.Printf("Sent Message, Status: %v\n", resp.Status)
 }
 
-func getReplyMarkup(links *Links) [][]map[string]string {
-	return [][]map[string]string{
-		{
+func getReplyMarkup(links *Links) map[string]any {
+	return map[string]any{
+		"inline_keyboard": [][]map[string]string{
 			{
-				"text": "Что такое крафтовое мыло",
-				"url":  links.Soap,
+				{
+					"text": "Что такое крафтовое мыло",
+					"url":  links.Soap,
+				},
 			},
-		},
-		{
 			{
-				"text": "Как сделать заказ",
-				"url":  links.Prices,
+				{
+					"text": "Как сделать заказ",
+					"url":  links.Prices,
+				},
 			},
-		},
-		{
 			{
-				"text": "Что такое гидролат",
-				"url":  links.Distillate,
+				{
+					"text": "Что такое гидролат",
+					"url":  links.Distillate,
+				},
 			},
 		},
 	}
