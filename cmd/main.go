@@ -34,92 +34,108 @@ type User struct {
 	Username  string `json:"username,omitempty"`
 }
 
-func (app *App) handleChannelPost(update *Update) {
-	if update.Message != nil && strings.Contains(strings.ToLower(update.Message.Text), "ботик") {
-		chatID := update.Message.Chat.ID
+func isBotMention(message *Message) bool {
+	return message != nil && strings.Contains(strings.ToLower(message.Text), "ботик")
+}
 
-		userMention := update.Message.From.FirstName
-		if update.Message.From.LastName != "" {
-			userMention += " " + update.Message.From.LastName
-		}
+func buildUserMention(user *User) string {
+	userMention := user.FirstName
+	if user.LastName != "" {
+		userMention += " " + user.LastName
+	}
 
-		notificationMention := userMention
-		if update.Message.From.Username != "" {
-			notificationMention = "@" + update.Message.From.Username
-		}
+	notificationMention := userMention
+	if user.Username != "" {
+		notificationMention = "@" + user.Username
+	}
 
-		// Send message using HTTP POST request
-		url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", app.config.Token)
-		payload := map[string]interface{}{
-			"chat_id": chatID,
-			"text":    fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", notificationMention),
-			"reply_markup": map[string]interface{}{
-				"inline_keyboard": [][]map[string]string{
-					{
-						{
-							"text": "Что такое крафтовое мыло",
-							"url":  app.config.Links.Soap,
-						},
-					},
-					{
-						{
-							"text": "Как сделать заказ",
-							"url":  app.config.Links.Prices,
-						},
-					},
-					{
-						{
-							"text": "Что такое гидролат",
-							"url":  app.config.Links.Distillate,
-						},
-					},
-				},
+	return notificationMention
+}
+
+func getSendMessageUrl(token string) string {
+	return fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
+}
+
+func getMessageText(message *Message) string {
+	userMention := buildUserMention(&message.From)
+	return fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", userMention)
+}
+
+func sendMessage(url string, jsonData []byte) {
+	resp, err := http.Post(url, "application/json", strings.NewReader(string(jsonData)))
+	if err != nil {
+		fmt.Printf("Error sending message: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+	fmt.Printf("Sent Message, Status: %v\n", resp.Status)
+}
+
+func getReplyMarkup(links *Links) [][]map[string]string {
+	return [][]map[string]string{
+		{
+			{
+				"text": "Что такое крафтовое мыло",
+				"url":  links.Soap,
 			},
+		},
+		{
+			{
+				"text": "Как сделать заказ",
+				"url":  links.Prices,
+			},
+		},
+		{
+			{
+				"text": "Что такое гидролат",
+				"url":  links.Distillate,
+			},
+		},
+	}
+}
+
+func (app *App) handleMessage(update *Update) {
+	if isBotMention(update.Message) {
+		chatID := update.Message.Chat.ID
+		url := getSendMessageUrl(app.config.Token)
+		payload := map[string]any{
+			"chat_id":      chatID,
+			"text":         getMessageText(update.Message),
+			"reply_markup": getReplyMarkup(&app.config.Links),
 		}
 
 		jsonData, _ := json.Marshal(payload)
-		resp, _ := http.Post(url, "application/json", strings.NewReader(string(jsonData)))
-		defer resp.Body.Close()
-
-		fmt.Printf("Sent Message, Status: %v\n", resp.Status)
+		sendMessage(url, jsonData)
 	}
+}
+
+func (app *App) requestHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Printf("Error reading request body: %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	var update Update
+	if err := json.Unmarshal(body, &update); err != nil {
+		fmt.Printf("Error unmarshaling update: %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	app.handleMessage(&update)
+	w.WriteHeader(http.StatusOK)
 }
 
 func main() {
 	config := newConfig()
-
 	app := &App{
 		config: config,
 	}
-
-	if config.GoEnv == "development" {
-		fmt.Println("Development mode not implemented for standard library version")
+	http.HandleFunc("/bot", app.requestHandler)
+	fmt.Printf("Starting webhook server on port %s\n", config.Port)
+	err := http.ListenAndServe(":"+config.Port, nil)
+	if err != nil {
+		fmt.Printf("Server error: %v\n", err)
 		os.Exit(1)
-	} else if config.GoEnv == "production" {
-		http.HandleFunc("/bot", func(w http.ResponseWriter, r *http.Request) {
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				fmt.Printf("Error reading request body: %v\n", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-
-			var update Update
-			if err := json.Unmarshal(body, &update); err != nil {
-				fmt.Printf("Error unmarshaling update: %v\n", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-
-			app.handleChannelPost(&update)
-			w.WriteHeader(http.StatusOK)
-		})
-
-		fmt.Printf("Starting webhook server on port %s\n", config.Port)
-		err := http.ListenAndServe(":"+config.Port, nil)
-		if err != nil {
-			fmt.Printf("Server error: %v\n", err)
-			os.Exit(1)
-		}
 	}
 }

@@ -7,15 +7,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Links struct {
+	Distillate string `mapstructure:"distillate"`
+	Prices     string `mapstructure:"prices"`
+	Soap       string `mapstructure:"soap"`
+}
+
 type Config struct {
 	Token string `mapstructure:"TOKEN"`
 	GoEnv string `mapstructure:"GO_ENV"`
 	Port  string `mapstructure:"PORT"`
-	Links struct {
-		Distillate string `mapstructure:"distillate"`
-		Prices     string `mapstructure:"prices"`
-		Soap       string `mapstructure:"soap"`
-	} `mapstructure:"links"`
+	Links Links  `mapstructure:"links"`
 }
 
 func newConfig() *Config {
