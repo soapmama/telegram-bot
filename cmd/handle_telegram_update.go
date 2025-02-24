@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-func isActionableMessage(message *Message) bool {
+func containsKeyword(message *Message) bool {
 	return message != nil && strings.Contains(strings.ToLower(message.Text), "ботик")
 }
 
-func getUserMention(user *User) string {
+func formatUserMention(user *User) string {
 	userMention := user.FirstName
 	if user.LastName != "" {
 		userMention += " " + user.LastName
@@ -26,16 +26,16 @@ func getUserMention(user *User) string {
 	return notificationMention
 }
 
-func getSendMessageUrl(token string) string {
+func buildSendMessageUrl(token string) string {
 	return fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
 }
 
-func getMessageText(message *Message) string {
-	userMention := getUserMention(&message.From)
+func createWelcomeMessage(message *Message) string {
+	userMention := formatUserMention(&message.From)
 	return fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", userMention)
 }
 
-func getReplyMarkup(links *Links) map[string]any {
+func createButtonsMarkup(links *Links) map[string]any {
 	return map[string]any{
 		"inline_keyboard": [][]map[string]string{
 			{
@@ -60,11 +60,11 @@ func getReplyMarkup(links *Links) map[string]any {
 	}
 }
 
-func (app *App) getResponsePayload(message *Message) *strings.Reader {
+func (app *App) buildMessagePayload(message *Message) *strings.Reader {
 	payload := map[string]any{
 		"chat_id":           message.Chat.ID,
-		"text":              getMessageText(message),
-		"reply_markup":      getReplyMarkup(&app.config.Links),
+		"text":              createWelcomeMessage(message),
+		"reply_markup":      createButtonsMarkup(&app.config.Links),
 		"message_thread_id": message.MessageThreadID,
 	}
 	jsonData, _ := json.Marshal(payload)
@@ -82,9 +82,9 @@ func sendMessage(url string, payload *strings.Reader) {
 }
 
 func (app *App) handleTelegramUpdate(update *Update) {
-	if isActionableMessage(update.Message) {
-		url := getSendMessageUrl(app.config.Token)
-		payload := app.getResponsePayload(update.Message)
+	if containsKeyword(update.Message) {
+		url := buildSendMessageUrl(app.config.Token)
+		payload := app.buildMessagePayload(update.Message)
 		sendMessage(url, payload)
 	}
 }
