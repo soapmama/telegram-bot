@@ -104,6 +104,7 @@ func (app *App) handleMessage(update *Update) {
 			"reply_markup": getReplyMarkup(&app.config.Links),
 		}
 
+		fmt.Printf("Sending message to chat %d with url: %s and payload: %v\n", chatID, url, payload)
 		jsonData, _ := json.Marshal(payload)
 		sendMessage(url, jsonData)
 	}
