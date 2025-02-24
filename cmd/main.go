@@ -19,9 +19,10 @@ type Update struct {
 }
 
 type Message struct {
-	Text string `json:"text"`
-	Chat Chat   `json:"chat"`
-	From User   `json:"from"`
+	Text            string `json:"text"`
+	Chat            Chat   `json:"chat"`
+	From            User   `json:"from"`
+	MessageThreadID int64  `json:"message_thread_id,omitempty"`
 }
 
 type Chat struct {
@@ -100,11 +101,13 @@ func getReplyMarkup(links *Links) map[string]any {
 func (app *App) handleMessage(update *Update) {
 	if isBotMention(update.Message) {
 		chatID := update.Message.Chat.ID
+		messageThreadID := update.Message.MessageThreadID
 		url := getSendMessageUrl(app.config.Token)
 		payload := map[string]any{
-			"chat_id":      chatID,
-			"text":         getMessageText(update.Message),
-			"reply_markup": getReplyMarkup(&app.config.Links),
+			"chat_id":           chatID,
+			"text":              getMessageText(update.Message),
+			"reply_markup":      getReplyMarkup(&app.config.Links),
+			"message_thread_id": messageThreadID,
 		}
 
 		jsonData, _ := json.Marshal(payload)
