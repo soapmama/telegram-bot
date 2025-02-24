@@ -17,6 +17,16 @@
 go run .
 ```
 
+## Проверка обновлений пакетов
+
+```bash
+# Install the tool
+go install github.com/psampaz/go-mod-outdated@latest
+
+# Run it with go list
+go list -u -m -json all | go-mod-outdated -update -direct
+```
+
 ## Деплой
 
 TODO
