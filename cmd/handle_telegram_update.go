@@ -32,7 +32,9 @@ func buildSendMessageUrl(token string) string {
 
 func createWelcomeMessage(message *Message) string {
 	userMention := formatUserMention(&message.From)
-	return fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", userMention)
+	threadID := message.MessageThreadID
+	chatID := message.Chat.ID
+	return fmt.Sprintf("[DEBUG CHAT ID: %d, THREAD ID: %d]\nПривет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", chatID, threadID, userMention)
 }
 
 func createButtonsMarkup(links *Links) map[string]any {
