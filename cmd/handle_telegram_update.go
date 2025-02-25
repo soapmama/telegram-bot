@@ -11,8 +11,7 @@ import (
 func (app *App) containsKeyword(message *Message) bool {
 	return message != nil &&
 		strings.Contains(strings.ToLower(message.Text), "ботик") &&
-		message.Chat.ID == app.config.ChatID &&
-		message.MessageThreadID == app.config.ThreadID
+		message.Chat.ID == app.config.ChatID
 }
 
 func formatUserMention(user *User) string {
