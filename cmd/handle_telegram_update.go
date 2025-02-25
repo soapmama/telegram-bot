@@ -8,8 +8,11 @@ import (
 	"strings"
 )
 
-func containsKeyword(message *Message) bool {
-	return message != nil && strings.Contains(strings.ToLower(message.Text), "ботик")
+func (app *App) containsKeyword(message *Message) bool {
+	return message != nil &&
+		strings.Contains(strings.ToLower(message.Text), "ботик") &&
+		message.Chat.ID == app.config.ChatID &&
+		message.MessageThreadID == app.config.ThreadID
 }
 
 func formatUserMention(user *User) string {
@@ -32,9 +35,7 @@ func buildSendMessageUrl(token string) string {
 
 func createWelcomeMessage(message *Message) string {
 	userMention := formatUserMention(&message.From)
-	threadID := message.MessageThreadID
-	chatID := message.Chat.ID
-	return fmt.Sprintf("[DEBUG CHAT ID: %d, THREAD ID: %d]\nПривет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", chatID, threadID, userMention)
+	return fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла \"Мыльная Мама\", которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", userMention)
 }
 
 func createButtonsMarkup(links *Links) map[string]any {
@@ -64,10 +65,10 @@ func createButtonsMarkup(links *Links) map[string]any {
 
 func (app *App) buildMessagePayload(message *Message) *strings.Reader {
 	payload := map[string]any{
-		"chat_id":           message.Chat.ID,
+		"chat_id":           app.config.ChatID,
 		"text":              createWelcomeMessage(message),
 		"reply_markup":      createButtonsMarkup(&app.config.Links),
-		"message_thread_id": message.MessageThreadID,
+		"message_thread_id": app.config.ThreadID,
 	}
 	jsonData, _ := json.Marshal(payload)
 	return strings.NewReader(string(jsonData))
@@ -84,7 +85,7 @@ func sendMessage(url string, payload *strings.Reader) {
 }
 
 func (app *App) handleTelegramUpdate(update *Update) {
-	if containsKeyword(update.Message) {
+	if app.containsKeyword(update.Message) {
 		url := buildSendMessageUrl(app.config.Token)
 		payload := app.buildMessagePayload(update.Message)
 		sendMessage(url, payload)

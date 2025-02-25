@@ -14,10 +14,11 @@ type Links struct {
 }
 
 type Config struct {
-	Token string `mapstructure:"TOKEN"`
-	GoEnv string `mapstructure:"GO_ENV"`
-	Port  string `mapstructure:"PORT"`
-	Links Links  `mapstructure:"links"`
+	Token    string `mapstructure:"TOKEN"`
+	Port     string `mapstructure:"PORT"`
+	ChatID   int64  `mapstructure:"CHAT_ID"`
+	ThreadID int64  `mapstructure:"THREAD_ID"`
+	Links    Links  `mapstructure:"links"`
 }
 
 func newConfig() *Config {
@@ -34,7 +35,8 @@ func newConfig() *Config {
 	v.AutomaticEnv()
 
 	v.BindEnv("TOKEN")
-	v.BindEnv("GO_ENV")
+	v.BindEnv("CHAT_ID")
+	v.BindEnv("THREAD_ID")
 	v.BindEnv("PORT")
 
 	if err := v.ReadInConfig(); err != nil {
