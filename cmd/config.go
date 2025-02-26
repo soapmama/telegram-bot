@@ -11,6 +11,7 @@ type Links struct {
 	Distillate string `mapstructure:"distillate"`
 	Prices     string `mapstructure:"prices"`
 	Soap       string `mapstructure:"soap"`
+	Ubtan      string `mapstructure:"ubtan"`
 }
 
 type Config struct {

@@ -58,6 +58,12 @@ func createButtonsMarkup(links *Links) map[string]any {
 					"url":  links.Distillate,
 				},
 			},
+			{
+				{
+					"text": "Что такое убтан",
+					"url":  links.Ubtan,
+				},
+			},
 		},
 	}
 }
