@@ -42,14 +42,14 @@ func createButtonsMarkup(links *Links) map[string]any {
 		"inline_keyboard": [][]map[string]string{
 			{
 				{
-					"text": "Что такое крафтовое мыло",
-					"url":  links.Soap,
+					"text": "Как сделать заказ",
+					"url":  links.Prices,
 				},
 			},
 			{
 				{
-					"text": "Как сделать заказ",
-					"url":  links.Prices,
+					"text": "Что такое крафтовое мыло",
+					"url":  links.Soap,
 				},
 			},
 			{
