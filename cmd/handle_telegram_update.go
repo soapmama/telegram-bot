@@ -14,6 +14,12 @@ func (app *App) containsKeyword(message *Message) bool {
 		message.Chat.ID == app.config.ChatID
 }
 
+func (app *App) isNewMemberJoined(message *Message) bool {
+	return message != nil &&
+		len(message.NewChatMembers) > 0 &&
+		message.Chat.ID == app.config.ChatID
+}
+
 func formatUserMention(user *User) string {
 	userMention := user.FirstName
 	if user.LastName != "" {
@@ -35,6 +41,26 @@ func buildSendMessageUrl(token string) string {
 func createWelcomeMessage(message *Message) string {
 	userMention := formatUserMention(&message.From)
 	return fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла «Мыльная Мама», которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", userMention)
+}
+
+func createWelcomeMessageForNewMembers(newMembers []User) string {
+	// Format all user mentions
+	var mentions []string
+	for _, member := range newMembers {
+		mentions = append(mentions, formatUserMention(&member))
+	}
+
+	// Join all mentions with commas and "and" for the last one
+	var userMentions string
+	if len(mentions) == 1 {
+		userMentions = mentions[0]
+	} else if len(mentions) == 2 {
+		userMentions = mentions[0] + " и " + mentions[1]
+	} else {
+		userMentions = strings.Join(mentions[:len(mentions)-1], ", ") + " и " + mentions[len(mentions)-1]
+	}
+
+	return fmt.Sprintf("Привет, %s!\n\nВы пришли в мастерскую крафтового мыла «Мыльная Мама», которая специализируется на натуральной и безопасной продукции. Делаем своими руками, из своих трав и по своим рецептам.", userMentions)
 }
 
 func createButtonsMarkup(links *Links) map[string]any {
@@ -79,6 +105,17 @@ func (app *App) buildMessagePayload(message *Message) *strings.Reader {
 	return strings.NewReader(string(jsonData))
 }
 
+func (app *App) buildNewMembersMessagePayload(newMembers []User) *strings.Reader {
+	payload := map[string]any{
+		"chat_id":           app.config.ChatID,
+		"text":              createWelcomeMessageForNewMembers(newMembers),
+		"reply_markup":      createButtonsMarkup(&app.config.Links),
+		"message_thread_id": app.config.ThreadID,
+	}
+	jsonData, _ := json.Marshal(payload)
+	return strings.NewReader(string(jsonData))
+}
+
 func sendMessage(url string, payload *strings.Reader) {
 	resp, err := http.Post(url, "application/json", payload)
 	if err != nil {
@@ -93,6 +130,10 @@ func (app *App) handleTelegramUpdate(update *Update) {
 	if app.containsKeyword(update.Message) {
 		url := buildSendMessageUrl(app.config.Token)
 		payload := app.buildMessagePayload(update.Message)
+		sendMessage(url, payload)
+	} else if app.isNewMemberJoined(update.Message) {
+		url := buildSendMessageUrl(app.config.Token)
+		payload := app.buildNewMembersMessagePayload(update.Message.NewChatMembers)
 		sendMessage(url, payload)
 	}
 }

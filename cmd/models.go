@@ -13,6 +13,7 @@ type Message struct {
 	Chat            Chat   `json:"chat"`
 	From            User   `json:"from"`
 	MessageThreadID int64  `json:"message_thread_id,omitempty"`
+	NewChatMembers  []User `json:"new_chat_members,omitempty"`
 }
 
 type Chat struct {
