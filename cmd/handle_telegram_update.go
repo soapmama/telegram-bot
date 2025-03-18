@@ -8,12 +8,6 @@ import (
 	"strings"
 )
 
-func (app *App) containsKeyword(message *Message) bool {
-	return message != nil &&
-		strings.Contains(strings.ToLower(message.Text), "ботик") &&
-		message.Chat.ID == app.config.ChatID
-}
-
 func (app *App) isNewMemberJoined(message *Message) bool {
 	return message != nil &&
 		len(message.NewChatMembers) > 0 &&
@@ -127,11 +121,7 @@ func sendMessage(url string, payload *strings.Reader) {
 }
 
 func (app *App) handleTelegramUpdate(update *Update) {
-	if app.containsKeyword(update.Message) {
-		url := buildSendMessageUrl(app.config.Token)
-		payload := app.buildMessagePayload(update.Message)
-		sendMessage(url, payload)
-	} else if app.isNewMemberJoined(update.Message) {
+	if app.isNewMemberJoined(update.Message) {
 		url := buildSendMessageUrl(app.config.Token)
 		payload := app.buildNewMembersMessagePayload(update.Message.NewChatMembers)
 		sendMessage(url, payload)
