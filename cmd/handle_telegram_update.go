@@ -88,23 +88,14 @@ func createButtonsMarkup(links *Links) map[string]any {
 	}
 }
 
-func (app *App) buildMessagePayload(message *Message) *strings.Reader {
-	payload := map[string]any{
-		"chat_id":           app.config.ChatID,
-		"text":              createWelcomeMessage(message),
-		"reply_markup":      createButtonsMarkup(&app.config.Links),
-		"message_thread_id": app.config.ThreadID,
-	}
-	jsonData, _ := json.Marshal(payload)
-	return strings.NewReader(string(jsonData))
-}
-
 func (app *App) buildNewMembersMessagePayload(newMembers []User) *strings.Reader {
 	payload := map[string]any{
-		"chat_id":           app.config.ChatID,
-		"text":              createWelcomeMessageForNewMembers(newMembers),
-		"reply_markup":      createButtonsMarkup(&app.config.Links),
-		"message_thread_id": app.config.ThreadID,
+		"chat_id":      app.config.ChatID,
+		"text":         createWelcomeMessageForNewMembers(newMembers),
+		"reply_markup": createButtonsMarkup(&app.config.Links),
+	}
+	if app.config.ThreadID > 1 {
+		payload["message_thread_id"] = app.config.ThreadID
 	}
 	jsonData, _ := json.Marshal(payload)
 	return strings.NewReader(string(jsonData))
