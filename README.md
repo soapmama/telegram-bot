@@ -4,7 +4,7 @@
 
 ## Требуется
 
-- [Go 1.24](https://go.dev/dl/)
+- [Go 1.25](https://go.dev/dl/)
 - [Telegram API token](https://core.telegram.org/bots/api#authorizing-your-bot)
 
 ## Подготовка
@@ -17,14 +17,28 @@
 go run .
 ```
 
-## Проверка обновлений пакетов
+## Обновление пакетов
+
+Рекомендуется использовать [gomod-upgrade](https://github.com/oligot/go-mod-upgrade).
 
 ```bash
 # Install the tool
-go install github.com/psampaz/go-mod-outdated@latest
+go install github.com/oligot/go-mod-upgrade@latest
 
 # Run it with go list
-go list -u -m -json all | go-mod-outdated -update -direct
+go-mod-upgrade
+```
+
+## Тесты
+
+Рекомендуется использовать gotestsum.
+
+```bash
+# Install gotestsum
+go install gotest.tools/gotestsum@latest
+
+# Run tests
+gotestsum
 ```
 
 ## Деплой
